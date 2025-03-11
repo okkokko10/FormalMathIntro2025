@@ -102,13 +102,50 @@ or using `exact?` at a suitable point. An example of a relevant lemma might be
 -- Let us first show that `g ⁻¹'` respects unions.
 example (s₁ s₂ : Set X) :
     g ⁻¹' (s₁ ∪ s₂) = (g ⁻¹' s₁) ∪ (g ⁻¹' s₂) := by
-  sorry
+  repeat rw [Set.union_def]
+  repeat rw [Set.preimage]
+  simp only [Set.mem_setOf_eq]
+
+  -- simp only [Set.preimage_union]
+
 
 -- EXERCISE 1b
 -- Let us then show that also `f ''` respects unions.
 example (s₁ s₂ : Set X) :
     f '' (s₁ ∪ s₂) = (f '' s₁) ∪ (f '' s₂) := by
-  sorry
+  repeat rw [Set.image]
+
+  repeat rw [Set.union_def]
+  simp [Set.mem_setOf_eq]
+  -- have w(F G : X → Prop) : (∃ x, (F x)) ∨ (∃ x, (G x)) ↔  (∃ x, (F x) ∨ (G x)) :=
+  --   by exact Iff.symm exists_or
+  -- change {x | ∃ a, (a ∈ s₁ ∨ a ∈ s₂) ∧ f a = x} = {a | (∃ a_1, a_1 ∈ s₁ ∧ f a_1 = a) ∨ ∃ a_1, a_1 ∈ s₂ ∧ f a_1 = a}
+
+  let F (s : Set X) (a) (a_1) := (a_1 ∈ s ∧ f a_1 = a)
+  -- change {x | ∃ a, (a ∈ s₁ ∨ a ∈ s₂) ∧ f a = x} = {a | (∃ a_1, F s₁ a a_1) ∨ (∃ a_1, F s₂ a a_1)}
+
+
+
+  suffices
+    {x | ∃ a, (a ∈ s₁ ∨ a ∈ s₂) ∧ f a = x} = {a | (∃ a_1, (F s₁ a a_1) ∨ (F s₂ a a_1))}
+    by simpa only [exists_or]
+
+  -- suffices
+  --   {x | ∃ a, ((a ∈ s₁ ∧ f a = x) ∨ (a ∈ s₂ ∧ f a = x))}
+  --   = {a | (∃ a_1, (F s₁ a a_1) ∨ (F s₂ a a_1))}
+  --   by simpa only [or_and_right]
+  simp only [or_and_right]
+  rfl
+  -- change {x | ∃ a, ((F s₁ x a) ∨ (F s₂ x a))} = {a | ∃ a_1, F s₁ a a_1 ∨ F s₂ a a_1}
+  -- rfl
+
+
+
+
+
+
+  -- exact Set.image_union f s₁ s₂
+  done
 
 -- EXERCISE 2a
 -- Then let us show that `g ⁻¹'` respects intersections.
