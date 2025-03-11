@@ -151,24 +151,145 @@ example (s₁ s₂ : Set X) :
 -- Then let us show that `g ⁻¹'` respects intersections.
 example (s₁ s₂ : Set X) :
     g ⁻¹' (s₁ ∩ s₂) = (g ⁻¹' s₁) ∩ (g ⁻¹' s₂) := by
-  sorry
+
+  exact rfl
+
+  done
 
 -- EXERCISE 2b
 -- And that `f ''` respects intersections.
 example (s₁ s₂ : Set X) :
     f '' (s₁ ∩ s₂) = (f '' s₁) ∩ (f '' s₂) := by
+  simp_rw [Set.inter_def]
+  simp_rw [Set.image]
+  simp
+  refine Set.ext ?_
+  intro x
+  simp only [Set.mem_setOf_eq]
+
+  constructor
+  . intro l
+    cases' l with a l
+    constructor
+    . use a
+      have w := l.left.left
+      have w1 := l.right
+      exact ⟨w, w1⟩
+      done
+    . use a
+      have w := l.left.right
+      have w1 := l.right
+      exact ⟨w, w1⟩
+      done
+    done
+  ·
+    intro l
+    rcases l with ⟨⟨al,⟨ls,fl⟩ ⟩, ⟨ar,⟨rs,fr⟩⟩⟩
+
+    by_contra ch
+    simp at ch
+    specialize ch al ls
+    simp [fl] at ch
+
+
+
+
+    constructor
+    . use a
+      have w := l.left.left
+      have w1 := l.right
+      exact ⟨w, w1⟩
+      done
+    . use a
+      have w := l.left.right
+      have w1 := l.right
+      exact ⟨w, w1⟩
+      done
+    done
+
+    done
+
   sorry
+
+
+
+-- EXERCISE 2b
+-- And that `f ''` respects intersections.
+example (s₁ s₂ : Set X) :
+    f '' (s₁ ∩ s₂) = (f '' s₁) ∩ (f '' s₂) := by
+
+  simp_rw [Set.inter_def]
+  simp_rw [Set.image]
+  simp [Set.mem_setOf_eq]
+  ext y
+  simp
+  let F(a) := f a = y
+  let Ff(a) := g y = a
+  have wg(a) : f a = y ↔ g y = a :=
+    by
+      constructor
+      · intro fa
+        rw [←fa]
+        done
+
+  change (∃ a, (s₁ a ∧ s₂ a) ∧ F a) ↔ (∃ a, s₁ a ∧ F a) ∧ ∃a, s₂ a ∧ F a
+
+  have ww(a) : (s₁ a ∧ F a) ∧ (s₂ a ∧ F a) ↔ (s₁ a ∧ s₂ a) ∧ F a :=
+    by exact Iff.symm and_and_right
+  simp [←ww]
+
+  let F1(a) := (s₁ a ∧ F a)
+  let F2(a) := (s₂ a ∧ F a)
+  change (∃ a, (F1 a) ∧ F2 a) ↔ (∃ a, F1 a) ∧ ∃ a, F2 a
+
+  constructor
+  · tauto
+    done
+
+
+
+
+  sorry
+
+
+
+-- EXERCISE 2b
+-- And that `f ''` respects intersections.
+example (s₁ s₂ : Set X) :
+    f '' (s₁ ∩ s₂) = (f '' s₁) ∩ (f '' s₂) := by
+
+  suffices g ⁻¹' (s₁ ∩ s₂) = (g ⁻¹' s₁) ∩ (g ⁻¹' s₂)
+    by
+      refine Set.image_inter ?_
+      exact Function.LeftInverse.injective (congrFun hgf)
+      done
+  exact rfl
+
+
 
 -- EXERCISE 3a
 -- Same with complements, `g ⁻¹'` respects them.
 example (s : Set X) :
     g ⁻¹' sᶜ = (g ⁻¹' s)ᶜ := by
-  sorry
+
+  simp only [Set.preimage_compl]
+
 
 -- EXERCISE 3b
 -- And finally, also `f ''` respects complements.
 example (s : Set X) :
     f '' sᶜ = (f '' s)ᶜ := by
+
+  have hw := Function.LeftInverse.injective (congrFun hgf)
+
+  have w(x) : g ⁻¹' x = f '' x :=
+    by
+      -- refine Set.image_inter ?_
+      -- refine (Set.preimage_eq_iff_eq_image ?_).mpr ?_
+      -- exact Function.LeftInverse.injective (congrFun hfg)
+      done
+
+
   sorry
 
 -- Was `f ''` (image/push-forward) or `g ⁻¹'` (preimage/pull-back) easier to deal with?
