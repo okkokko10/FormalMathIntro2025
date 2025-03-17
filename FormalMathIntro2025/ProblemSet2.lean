@@ -156,101 +156,6 @@ example (s₁ s₂ : Set X) :
 
   done
 
--- EXERCISE 2b
--- And that `f ''` respects intersections.
-example (s₁ s₂ : Set X) :
-    f '' (s₁ ∩ s₂) = (f '' s₁) ∩ (f '' s₂) := by
-  simp_rw [Set.inter_def]
-  simp_rw [Set.image]
-  simp
-  refine Set.ext ?_
-  intro x
-  simp only [Set.mem_setOf_eq]
-
-  constructor
-  . intro l
-    cases' l with a l
-    constructor
-    . use a
-      have w := l.left.left
-      have w1 := l.right
-      exact ⟨w, w1⟩
-      done
-    . use a
-      have w := l.left.right
-      have w1 := l.right
-      exact ⟨w, w1⟩
-      done
-    done
-  ·
-    intro l
-    rcases l with ⟨⟨al,⟨ls,fl⟩ ⟩, ⟨ar,⟨rs,fr⟩⟩⟩
-
-    by_contra ch
-    simp at ch
-    specialize ch al ls
-    simp [fl] at ch
-
-
-
-
-    constructor
-    . use a
-      have w := l.left.left
-      have w1 := l.right
-      exact ⟨w, w1⟩
-      done
-    . use a
-      have w := l.left.right
-      have w1 := l.right
-      exact ⟨w, w1⟩
-      done
-    done
-
-    done
-
-  sorry
-
-
-
--- EXERCISE 2b
--- And that `f ''` respects intersections.
-example (s₁ s₂ : Set X) :
-    f '' (s₁ ∩ s₂) = (f '' s₁) ∩ (f '' s₂) := by
-
-  simp_rw [Set.inter_def]
-  simp_rw [Set.image]
-  simp [Set.mem_setOf_eq]
-  ext y
-  simp
-  let F(a) := f a = y
-  let Ff(a) := g y = a
-  have wg(a) : f a = y ↔ g y = a :=
-    by
-      constructor
-      · intro fa
-        rw [←fa]
-        done
-
-  change (∃ a, (s₁ a ∧ s₂ a) ∧ F a) ↔ (∃ a, s₁ a ∧ F a) ∧ ∃a, s₂ a ∧ F a
-
-  have ww(a) : (s₁ a ∧ F a) ∧ (s₂ a ∧ F a) ↔ (s₁ a ∧ s₂ a) ∧ F a :=
-    by exact Iff.symm and_and_right
-  simp [←ww]
-
-  let F1(a) := (s₁ a ∧ F a)
-  let F2(a) := (s₂ a ∧ F a)
-  change (∃ a, (F1 a) ∧ F2 a) ↔ (∃ a, F1 a) ∧ ∃ a, F2 a
-
-  constructor
-  · tauto
-    done
-
-
-
-
-  sorry
-
 
 
 -- EXERCISE 2b
@@ -275,22 +180,59 @@ example (s : Set X) :
   simp only [Set.preimage_compl]
 
 
+
+
 -- EXERCISE 3b
 -- And finally, also `f ''` respects complements.
 example (s : Set X) :
     f '' sᶜ = (f '' s)ᶜ := by
 
-  have hw := Function.LeftInverse.injective (congrFun hgf)
+  have wa(se : Set X) : f '' se = g ⁻¹' se := by
+    ext y
 
-  have w(x) : g ⁻¹' x = f '' x :=
-    by
-      -- refine Set.image_inter ?_
-      -- refine (Set.preimage_eq_iff_eq_image ?_).mpr ?_
-      -- exact Function.LeftInverse.injective (congrFun hfg)
+
+    let gy := g y
+    let fgy := f gy
+    have fgy_y : fgy = y :=
+      by
+        -- have test (x y : X) : x = y → f x = f y := by
+        --   intro a
+        --   exact congrArg f a
+
+        -- have test2 (f g : X →Y)(x : X) : f = g → f x = g x := by
+        --   intro a
+        --   exact congrFun a x
+        -- change fgy = id y
+        -- unfold Function.comp at hfg
+        exact congrFun hfg y
+        done
+
+
+    simp
+    constructor
+    ·
+      intro ⟨x, ⟨x_se,fx_y⟩ ⟩
+      have gfx_x : g (f x) = x := congrFun hgf x
+
+      rw [←fx_y]
+      rw [gfx_x]
+      exact x_se
+
+      done
+    ·
+      intro gy_se
+      use gy
       done
 
+  have hw := Function.LeftInverse.injective (congrFun hgf)
 
-  sorry
+  rw [wa s]
+  rw [wa sᶜ]
+
+  simp only [Set.preimage_compl]
+  done
+
+
 
 -- Was `f ''` (image/push-forward) or `g ⁻¹'` (preimage/pull-back) easier to deal with?
 -- Why was the other one harder?
@@ -348,12 +290,61 @@ and two sets `s₁, s₂ ⊆ X` such that `f '' (s₁ ∩ s₂) ≠ f '' s₁ �
 
 -- **...your constructions here...**
 
+inductive Z : Type
+| a : Z
+| b : Z
+
+inductive W : Type
+| a : W
+
+def h : Z → W
+| Z.a => W.a
+| Z.b => W.a
+
+-- def s1 : Set Z := {Z.a}
+-- def s2 : Set Z := {Z.b}
+
+variable (s1 : Set Z ) (s1_a : s1 = {Z.a} )
+variable (s2 : Set Z ) (s2_b : s2 = {Z.b} )
+
+
+
 -- EXERCISE 4 (conclusion)
 -- Fill in the `sorry` using the definitions you gave above.
 example :
     ¬ (∀ (X Y : Type) (f : X → Y) (s₁ s₂ : Set X),
         f '' (s₁ ∩ s₂) = (f '' s₁) ∩ (f '' s₂)) := by
-  sorry
+
+  intro al
+  specialize al Z W h s1 s2
+  let www := s1 ∩ s2
+  have empty_intersect : s1 ∩ s2 = ∅ := by
+
+    have qq (x : Z) : x ∈ s1 ↔ x ∉ s2 := by
+      cases' x <;>
+      ·
+        rw [s1_a]
+        rw [s2_b]
+        simp
+        done
+    -- refine Set.disjoint_iff_inter_eq_empty.mp ?_
+    ext x
+    rw [Set.inter_def]
+    simp
+    exact (qq x).mp
+
+  rw [empty_intersect] at al
+  simp at al
+  have hs1 : W.a ∈  h '' s1 := by
+    simp [s1_a]
+  have hs2 : W.a ∈  h '' s2 := by
+    simp [s2_b]
+  have hss : W.a ∈  h '' s1 ∩ h '' s2 := by exact Set.mem_inter hs1 hs2
+  rw [←al] at hss
+  simp at hss
+
+
+  done
 
 
 

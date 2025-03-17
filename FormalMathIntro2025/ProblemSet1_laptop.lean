@@ -33,58 +33,14 @@ theorem isCauchy_def {a : ℕ → ℝ} :
     IsCauchy a ↔ ∀ ε > 0, ∃ B : ℕ, ∀ n m, B ≤ n → B ≤ m → |a n - a m| < ε := by
   rfl -- true by definition
 
-
-
 -- EXERCISE 1
 /-- Any convergent real-number sequence is necessarily a Cauchy sequence. -/
 theorem isCauchy_of_tendsTo {a : ℕ → ℝ} {t : ℝ} (a_lim : TendsTo a t) :
     IsCauchy a := by
   -- This is some work --- make sure you know the math proof first!
   -- You may take some inspiration from the uniqueness of limits proof.
+  sorry
 
-  rw [isCauchy_def]
-  rw [tendsTo_def] at a_lim
-
-  -- off topic: I wonder if the limit of a sequence has anything to do with the accummulation points of its set
-
-  -- TendsTo: we can have a tail that is within an arbitriary distance of the limit
-  -- IsCauchy: we can have a tail that has arbitrarily small diameter
-  -- If all points have at most distance ε/2 to a point `t`, by the triangle inequality they have at most ε distance to any other point
-  intro ε ε_pos
-  -- ε: diameter
-
-  specialize a_lim (ε/2) (by exact half_pos ε_pos)
-  rcases a_lim with ⟨tail, a_lim⟩
-  use tail
-  intros x y x_tail y_tail
-  have x_radius_bounded := a_lim _ x_tail
-  have y_radius_bounded := a_lim _ y_tail
-  -- set x_radius := |a x - t|
-  -- set y_radius := |a y - t|
-  -- apply a_lim at x_tail
-  -- apply a_lim at y_tail
-  set ax := a x
-  set ay := a y
-  let diam_bound := |ax - t| + |ay - t|
-  have diam_bounded : diam_bound < ε := by
-    suffices diam_bound < ε / 2 + ε / 2 by norm_num at this; exact this
-    apply add_lt_add x_radius_bounded y_radius_bounded
-
-
-  have diam_lt_diam_bound : |ax - ay| ≤ diam_bound := by
-    suffices |ax - ay| ≤ |ax - t| + |ay - t| from this
-    rw [abs_sub_comm ay t]
-    exact abs_sub_le ax t ay
-    -- cases' abs_cases (ax - ay) with w1 <;>
-    -- cases' abs_cases (ay - t) with w2 <;>
-    -- cases' abs_cases (ax - t) with w3 <;>
-    -- linarith
-    -- save
-  exact lt_of_le_of_lt diam_lt_diam_bound diam_bounded
-
-
-
-example (x y z : ℝ) : |x-y| ≤ |x-z| + |z-y| := by exact abs_sub_le x z y
 
 
 /-
@@ -95,8 +51,6 @@ example (x y z : ℝ) : |x-y| ≤ |x-z| + |z-y| := by exact abs_sub_le x z y
 `n ↦ a(n)` is a bounded sequence (just as in MS-C1541 Metric Spaces). -/
 def IsBounded (a : ℕ → ℝ) :=
   ∃ M, ∀ n, |a n| ≤ M
-
-
 
 -- EXERCISE 2
 -- Before we can prove that all Cauchy-sequences are bounded, we need an auxiliary result.
@@ -186,13 +140,7 @@ theorem isBounded_of_tendsTo {a : ℕ → ℝ} {t : ℝ} (a_lim : TendsTo a t) :
   exact isBounded_of_isCauchy (isCauchy_of_tendsTo a_lim)
 
   done
+
 end
-
-
-
-
-
-
-
 
 end AaltoFormalMath2025
