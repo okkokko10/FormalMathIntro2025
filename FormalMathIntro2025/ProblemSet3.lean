@@ -82,18 +82,103 @@ variable {σ : W →ₗ[𝕜] V}
 -- (We will assume g ∘ σ = id_W below separately, as needed. Same reason.)
 -- variable (hgσ' : g ∘ₗ σ = 1)
 
+
 /-- Uniqueness of the "corrector" for a given vector. -/
 lemma unique_corrector (hf : ker f = ⊥) (v : V) (u₁ u₂ : U)
     (h₁ : v = σ (g v) + f u₁) (h₂ : v = σ (g v) + f u₂) :
     u₁ = u₂ := by
+
   -- First make sure you know which mathematical assumption guarantees uniqueness here and how.
-  sorry
+
+
+  -- have hh := Mathlib.Tactic.LinearCombination.add_eq_eq h₁ (congrArg (fun x ↦ -x) h₂)
+  -- norm_num at hh
+  -- rw [←add_assoc] at hh
+  -- rw [neg_add_cancel] at hh
+  have hq := Eq.trans (Eq.comm.mp h₁) h₂
+  norm_num at hq
+  let ud := u₁ - u₂
+  let fud := f ud
+  have qq : f ud = 0 ↔ ud ∈ (ker f) := by exact Eq.to_iff rfl
+  rw [hf] at qq
+  simp at qq
+  have sub_eq_zero {U1 : Type} [AddCommGroup U1] (a b : U1 ) : a - b = 0 → a = b := by
+    intro amb
+    apply congrArg (fun x ↦ x + b) at amb
+    norm_num at amb
+    exact amb
+  suffices ud = 0 by
+    -- unfold ud at this
+    exact sub_eq_zero u₁ u₂ this
+  rw [←qq]
+  simp [ud]
+  rw [hq]
+  norm_num
+
+
+  done
 
 /-- Existence of the "corrector" for a given vector. -/
 lemma exists_corrector (hfg : range f = ker g) (hgσ : g ∘ₗ σ = 1) (v : V) :
     ∃ (u : U), v = σ (g v) + f u := by
   -- First make sure you know which mathematical assumption guarantees existence here and how.
   -- When using the hypothesis `hgσ`, you may find `LinearMap.congr_fun` useful.
+  have h_1 (x) : (g ∘ₗ σ) x = x := by
+    rw [hgσ]
+    simp only [one_apply]
+  have h_2 (x) : (σ ∘ₗ (g ∘ₗ σ)) x = σ x := by
+    suffices (g ∘ₗ σ) x = x by exact Eq.symm (LinearMap.congr_arg (_root_.id (Eq.symm this)))
+    exact h_1 x
+
+  have h_3(x) : g v = g (v + σ x) - x  := by
+    suffices  g v + x = g (v + σ x) by
+      exact (sub_eq_iff_eq_add.mpr this.symm).symm
+    simp
+    exact (h_1 x).symm
+
+  suffices ∀ (v1 : V), ∃ (u : U), v1 = σ (g v1) + f u by exact this v
+  suffices ∀ (v1 : V), ∃ (u : U), v1 - f u = σ (g v1)  by sorry
+  save
+
+  have change_of_variable (w : V) ( P : V → Prop) : (∀ v1 : V, P v1) ↔  (∀ v2 : V, P (v2 + w)) := by
+    constructor
+    · intro l vv
+      exact l (vv + w)
+    · intro l vv
+      have qqq := l (vv - w)
+      -- simp only [sub_add_cancel] at qqq
+      exact (sub_add_cancel vv w) ▸ qqq
+
+
+
+  suffices ∀ (v2 : V), ∃(vv : V), ∃ (u : U), v2 + vv - f u = σ (g (v2 + vv))  by
+    intro v1
+    have aa := this v1
+
+    done
+
+
+
+
+
+  -- have h_3 (x) : (σ ∘ₗ g) (σ x) = σ x := by
+  --   exact h_2 x
+  -- have h_4 (y) : y ∈ range σ → (σ ∘ₗ g) y = y := by
+  --   intro ⟨x,y_def⟩
+  --   rw [←y_def]
+  --   exact h_3 x
+
+  -- suffices ∃ u, v = (σ ∘ₗ g) (σ (g v)) + f u by
+  --   rcases this with ⟨u,ww⟩
+  --   use u
+  --   simp [h_3] at ww
+  --   exact ww
+
+
+  -- use sorry
+
+  -- apply fun x ↦ LinearMap.congr_fun x (σ ∘ₗ g)
+
   sorry
 
 -- We now use `Exists.choose` with `exists_corrector` to define a

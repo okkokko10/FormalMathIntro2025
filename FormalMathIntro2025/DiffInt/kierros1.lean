@@ -104,12 +104,53 @@ open Indices3
 
 def CrossProduct(a b : V3) : V3 := Vec3 (a y * b z - a z * b y) (a z * b x - a x * b z) (a x * b y - a y * b x)
 
-example (sv cv su cu r R : ℝ) (fu fv N : V3) :
-  fu = Vec3 ( - (R + r * cv) * su)  ((R+r*cv) * cu) (r*sv) →
-  fv = Vec3 ( - ( r * sv) * cu) (- r*sv * su) (r*cv) →
-  N = CrossProduct fu fv →
-  dotProduct N N = (r * (R+ r * cv)) := by
-    intros fu_d fv_d N_d
+-- example (sv cv su cu r R : ℝ) (fu fv N : V3) :
+--   fu = Vec3 ( - (R + r * cv) * su)  ((R+r*cv) * cu) (r*sv) →
+--   fv = Vec3 ( - ( r * sv) * cu) (- r*sv * su) (r*cv) →
+--   N = CrossProduct fu fv →
+--   (sv ^ 2) = 1 - cv ^ 2 →
+--   (su ^ 2) = 1 - cu ^ 2 →
+--   (N x)^2 + (N y)^2 + (N z)^2 - (r * (R + r * cv)) ^ 2 = 0 := by
+--     intros fu_d fv_d N_d v_1 u_1
+
+--     simp [CrossProduct] at N_d
+--     simp [fv_d,fu_d] at N_d
+--     ring_nf at N_d
+--     simp [N_d]
+--     ring_nf
+--     save
+--     simp [Vec3]
+--     norm_num
+--     simp [pow_two]
+--     norm_num
+--     ring_nf!
+--     -- simp [pow_two] at v_1 u_1
+--     -- have v_2 : 1 - cv ^ 2 = sv ^ 2 := by
+--     --   suffices 1 = cv ^ 2 + sv ^ 2   by exact sub_eq_of_eq_add' this
+--     --   suffices cv ^ 2 + sv ^ 2 = 1  by exact id (Eq.symm this)
+--     --   suffices  sv ^ 2 + cv ^ 2 = 1  by
+
+--     --     exact this
+--     --   ring
+--     --   exact v_1
+--     --   simpa using v_1
+--     save
+--     have qv : sv ^ 4 = (sv ^ 2) ^ 2 := by sorry
+--     have qu : su ^ 4 = (su ^ 2) ^ 2 := by sorry
+--     simp_rw [v_1,qv]
+--     simp_rw [u_1,qu]
+
+--     ring_nf
+--     by_cases h1 : r = 1
+--     · rw [h1]
+--       ring_nf
+--       by_cases h2 : R = 2
+--       ·
+--         rw [h2]
+--         ring_nf
+--         norm_num
+--         done
+--       done
 
 
-    done
+--     done
