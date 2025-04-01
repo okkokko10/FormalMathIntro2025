@@ -118,44 +118,124 @@ lemma unique_corrector (hf : ker f = ⊥) (v : V) (u₁ u₂ : U)
 
   done
 
+-- set_option linter.unusedVariables.analyzeTactics true
+
 /-- Existence of the "corrector" for a given vector. -/
 lemma exists_corrector (hfg : range f = ker g) (hgσ : g ∘ₗ σ = 1) (v : V) :
     ∃ (u : U), v = σ (g v) + f u := by
   -- First make sure you know which mathematical assumption guarantees existence here and how.
   -- When using the hypothesis `hgσ`, you may find `LinearMap.congr_fun` useful.
-  have h_1 (x) : (g ∘ₗ σ) x = x := by
-    rw [hgσ]
-    simp only [one_apply]
-  have h_2 (x) : (σ ∘ₗ (g ∘ₗ σ)) x = σ x := by
-    suffices (g ∘ₗ σ) x = x by exact Eq.symm (LinearMap.congr_arg (_root_.id (Eq.symm this)))
-    exact h_1 x
 
-  have h_3(x) : g v = g (v + σ x) - x  := by
-    suffices  g v + x = g (v + σ x) by
-      exact (sub_eq_iff_eq_add.mpr this.symm).symm
-    simp
-    exact (h_1 x).symm
+  -- have hgf : g ∘ₗ f = 0 := by
+  --   ext w
+  --   simp only [coe_comp, Function.comp_apply, zero_apply]
+  --   have t1 : f w ∈ range f := mem_range_self f w
+  --   rw [hfg] at t1
+  --   exact t1
 
-  suffices ∀ (v1 : V), ∃ (u : U), v1 = σ (g v1) + f u by exact this v
-  suffices ∀ (v1 : V), ∃ (u : U), v1 - f u = σ (g v1)  by sorry
-  save
+  have ker_sub(a b) : g a = g b ↔ a - b ∈ ker g := by
+    simp only [mem_ker, map_sub]
+    conv =>
+      right
+      rw [sub_eq_zero]
+  have σ_inj(a b) : a ∈ range σ → b ∈ range σ → g a = g b → a = b := by
+    intros aσ bσ ga_gb
+    rw [mem_range] at bσ aσ
+    have ⟨ya,aa⟩ := aσ
+    have ⟨yb,bb⟩ := bσ
+    rw [←bb,←aa] at ga_gb ⊢
+    simp_rw [←comp_apply] at ga_gb
+    simp only [hgσ, one_apply] at ga_gb
+    exact congrArg (⇑σ) ga_gb
 
-  have change_of_variable (w : V) ( P : V → Prop) : (∀ v1 : V, P v1) ↔  (∀ v2 : V, P (v2 + w)) := by
-    constructor
-    · intro l vv
-      exact l (vv + w)
-    · intro l vv
-      have qqq := l (vv - w)
-      -- simp only [sub_add_cancel] at qqq
-      exact (sub_add_cancel vv w) ▸ qqq
+  -- have σ_inj2(a b) : a ∈ range σ → b ∈ range σ → a - b ∈ ker g → a - b = 0 := by
+  --   rw [←ker_sub a b]
+  --   rw [sub_eq_zero]
+  --   exact fun a_1 a_2 a_3 ↦ σ_inj a b a_1 a_2 a_3
+
+  -- have σ_inj3(a b) : a ∈ range σ → b ∈ range σ → a - b ∈ range f → a - b = 0 := by
+  --   rw [hfg]
+  --   exact fun a_1 a_2 a_3 ↦ σ_inj2 a b a_1 a_2 a_3
+
+
+  -- NOTE: the ranges of f and σ only coincide at 0
+  -- have f_σ_independent (a) := σ_inj3 (a) 0
+  -- simp at f_σ_independent
+
+  rw [←hfg] at ker_sub
+  -- have (a b c : ℝ ): a = b + c ↔ a - b = c := by exact Iff.symm sub_eq_iff_eq_add'
+  conv =>
+    {
+      rhs
+      intro u
+      rw [←sub_eq_iff_eq_add']
+      rw [eq_comm]
+    }
+  -- simp_rw [←sub_eq_iff_eq_add']
+  rw [←mem_range]
+  rw [hfg]
+  simp only [mem_ker, map_sub]
+  rw [sub_eq_zero]
+  change g v = (g ∘ₗ σ) (g v)
+  rw [hgσ]
+  simp only [one_apply]
+/--
+
+  -- have addable (u): g v = g (v - f u) := by
+  --   simp only [map_sub]
+  --   symm
+  --   simp only [sub_eq_self]
+  --   exact LinearMap.congr_fun hgf u
+
+
+  -- suffices ∃ (u : U), v - f u = σ (g v) by
+  --   have ⟨u,wa⟩ := this
+  --   use u
+  --   exact (add_eq_of_eq_sub (wa.symm)).symm
+  --   -- exact Eq.symm (add_eq_of_eq_sub (_root_.id (Eq.symm wa)))
+
+  -- suffices ∃ (u : U), v - f u = σ (g (v - f u)) by
+  --   have ⟨u,this⟩ := this
+  --   use u
+  --   rw [addable u]
+  --   exact this
 
 
 
-  suffices ∀ (v2 : V), ∃(vv : V), ∃ (u : U), v2 + vv - f u = σ (g (v2 + vv))  by
-    intro v1
-    have aa := this v1
 
-    done
+  -- have h_1 (x) : (g ∘ₗ σ) x = x := by
+  --   rw [hgσ]
+  --   simp only [one_apply]
+  -- have h_2 (x) : (σ ∘ₗ (g ∘ₗ σ)) x = σ x := by
+  --   suffices (g ∘ₗ σ) x = x by exact Eq.symm (LinearMap.congr_arg (_root_.id (Eq.symm this)))
+  --   exact h_1 x
+
+  -- have h_3(x) : g v = g (v + σ x) - x  := by
+  --   suffices  g v + x = g (v + σ x) by
+  --     exact (sub_eq_iff_eq_add.mpr this.symm).symm
+  --   simp
+  --   exact (h_1 x).symm
+
+  -- suffices ∀ (v1 : V), ∃ (u : U), v1 = σ (g v1) + f u by exact this v
+  -- suffices ∀ (v1 : V), ∃ (u : U), v1 - f u = σ (g v1)  by sorry
+  -- save
+
+  -- have change_of_variable (w : V) ( P : V → Prop) : (∀ v1 : V, P v1) ↔  (∀ v2 : V, P (v2 + w)) := by
+  --   constructor
+  --   · intro l vv
+  --     exact l (vv + w)
+  --   · intro l vv
+  --     have qqq := l (vv - w)
+  --     -- simp only [sub_add_cancel] at qqq
+  --     exact (sub_add_cancel vv w) ▸ qqq
+
+
+
+  -- suffices ∀ (v2 : V), ∃(vv : V), ∃ (u : U), v2 + vv - f u = σ (g (v2 + vv))  by
+  --   intro v1
+  --   have aa := this v1
+
+  --   done
 
 
 
@@ -179,7 +259,7 @@ lemma exists_corrector (hfg : range f = ker g) (hgσ : g ∘ₗ σ = 1) (v : V) 
 
   -- apply fun x ↦ LinearMap.congr_fun x (σ ∘ₗ g)
 
-  sorry
+  --/
 
 -- We now use `Exists.choose` with `exists_corrector` to define a
 -- "corrector" `γ v : U` for any `v : V`.
