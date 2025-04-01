@@ -179,87 +179,7 @@ lemma exists_corrector (hfg : range f = ker g) (hgσ : g ∘ₗ σ = 1) (v : V) 
   change g v = (g ∘ₗ σ) (g v)
   rw [hgσ]
   simp only [one_apply]
-/--
 
-  -- have addable (u): g v = g (v - f u) := by
-  --   simp only [map_sub]
-  --   symm
-  --   simp only [sub_eq_self]
-  --   exact LinearMap.congr_fun hgf u
-
-
-  -- suffices ∃ (u : U), v - f u = σ (g v) by
-  --   have ⟨u,wa⟩ := this
-  --   use u
-  --   exact (add_eq_of_eq_sub (wa.symm)).symm
-  --   -- exact Eq.symm (add_eq_of_eq_sub (_root_.id (Eq.symm wa)))
-
-  -- suffices ∃ (u : U), v - f u = σ (g (v - f u)) by
-  --   have ⟨u,this⟩ := this
-  --   use u
-  --   rw [addable u]
-  --   exact this
-
-
-
-
-  -- have h_1 (x) : (g ∘ₗ σ) x = x := by
-  --   rw [hgσ]
-  --   simp only [one_apply]
-  -- have h_2 (x) : (σ ∘ₗ (g ∘ₗ σ)) x = σ x := by
-  --   suffices (g ∘ₗ σ) x = x by exact Eq.symm (LinearMap.congr_arg (_root_.id (Eq.symm this)))
-  --   exact h_1 x
-
-  -- have h_3(x) : g v = g (v + σ x) - x  := by
-  --   suffices  g v + x = g (v + σ x) by
-  --     exact (sub_eq_iff_eq_add.mpr this.symm).symm
-  --   simp
-  --   exact (h_1 x).symm
-
-  -- suffices ∀ (v1 : V), ∃ (u : U), v1 = σ (g v1) + f u by exact this v
-  -- suffices ∀ (v1 : V), ∃ (u : U), v1 - f u = σ (g v1)  by sorry
-  -- save
-
-  -- have change_of_variable (w : V) ( P : V → Prop) : (∀ v1 : V, P v1) ↔  (∀ v2 : V, P (v2 + w)) := by
-  --   constructor
-  --   · intro l vv
-  --     exact l (vv + w)
-  --   · intro l vv
-  --     have qqq := l (vv - w)
-  --     -- simp only [sub_add_cancel] at qqq
-  --     exact (sub_add_cancel vv w) ▸ qqq
-
-
-
-  -- suffices ∀ (v2 : V), ∃(vv : V), ∃ (u : U), v2 + vv - f u = σ (g (v2 + vv))  by
-  --   intro v1
-  --   have aa := this v1
-
-  --   done
-
-
-
-
-
-  -- have h_3 (x) : (σ ∘ₗ g) (σ x) = σ x := by
-  --   exact h_2 x
-  -- have h_4 (y) : y ∈ range σ → (σ ∘ₗ g) y = y := by
-  --   intro ⟨x,y_def⟩
-  --   rw [←y_def]
-  --   exact h_3 x
-
-  -- suffices ∃ u, v = (σ ∘ₗ g) (σ (g v)) + f u by
-  --   rcases this with ⟨u,ww⟩
-  --   use u
-  --   simp [h_3] at ww
-  --   exact ww
-
-
-  -- use sorry
-
-  -- apply fun x ↦ LinearMap.congr_fun x (σ ∘ₗ g)
-
-  --/
 
 -- We now use `Exists.choose` with `exists_corrector` to define a
 -- "corrector" `γ v : U` for any `v : V`.
@@ -285,19 +205,54 @@ properties that we need to prove are that `γ` (i.e., `corrector`) respects addi
 and scalar multiplication.
 -/
 
+-- QUESTION: why is unique_corrector not necessary in creating the function?
+
 /-- `corrector` respects scalar multiplication. -/
 lemma corrector_smul (hf : ker f = ⊥) (hfg : range f = ker g) (hgσ : g ∘ₗ σ = 1) (c : 𝕜) (v : V) :
     corrector hfg hgσ (c • v)
       = c • corrector hfg hgσ v := by
   -- Make sure you know the maths proof first. It uses earlier results.
-  sorry
+  -- let ww := corrector hfg hgσ (c • v)
+  have spec_a := corrector_spec hfg hgσ (c • v)
+  have spec_b := corrector_spec hfg hgσ (v)
+
+
+  have thh(u) : v = σ (g v) + f u → c • v = σ (g (c • v)) + f (c • u) := by
+    intro l
+    simp only [map_smul]
+    rw [←smul_add]
+    rw [←l]
+  specialize thh (corrector hfg hgσ (v)) spec_b
+
+  set u1 := corrector hfg hgσ (c • v)
+  set u2 := c • corrector hfg hgσ v
+
+  exact unique_corrector hf (c • v) u1 u2 spec_a thh
+
 
 /-- `corrector` respects scalar vector addition. -/
 lemma corrector_add (hf : ker f = ⊥) (hfg : range f = ker g) (hgσ : g ∘ₗ σ = 1) (v₁ v₂ : V) :
     corrector hfg hgσ (v₁ + v₂)
       = corrector hfg hgσ v₁ + corrector hfg hgσ v₂ := by
   -- Make sure you know the maths proof first. It uses earlier results.
-  sorry
+
+  have spec_a := corrector_spec hfg hgσ (v₁ + v₂)
+  have spec_1 := corrector_spec hfg hgσ (v₁)
+  have spec_2 := corrector_spec hfg hgσ (v₂)
+
+
+  have thh(u1 u2) : v₁ = σ (g v₁) + f u1 → v₂ = σ (g v₂) + f u2 → (v₁ + v₂) = σ (g (v₁ + v₂)) + f (u1 + u2) := by
+    intro l1 l2
+    simp only [map_add]
+    nth_rw 1 [l1]
+    nth_rw 1 [l2]
+    ac_rfl
+
+  specialize thh (corrector hfg hgσ v₁) (corrector hfg hgσ v₂) spec_1 spec_2
+
+
+  exact unique_corrector hf (v₁ + v₂) (corrector hfg hgσ (v₁ + v₂)) (corrector hfg hgσ v₁ + corrector hfg hgσ v₂) spec_a thh
+
 
 -- This allows us to build a "corrector" linear map.
 /-- The corrector *linear map* `γ : V → U` (such that...). -/
