@@ -109,13 +109,32 @@ variable {F : R → S}
 lemma lcInv_mono (F : R → S) :
     Monotone (lcInv F) := by
   -- Quite straightforward, but make sure you know the maths proof first.
-  sorry
+  intro a b a_b
+
+  -- rw [le_iff_eq_or_lt] at a_b
+  -- cases' a_b with ab_eq ab_lt
+  -- · rw [ab_eq]
+
+  unfold lcInv
+
+  refine sInf_le_sInf ?_
+  simp only [setOf_subset_setOf]
+  intro x bFx
+  trans b
+  exact a_b
+  exact bFx
+
+
+
 
 -- **EXERCISE:** Prove that...
 lemma lcInv_apply_self_le (x : R) :
     (lcInv F) (F x) ≤ x := by
   -- Very easy, but again make sure you know the maths proof first.
-  sorry
+  unfold lcInv
+  refine sInf_le ?_
+  rw [mem_setOf_eq]
+
 
 -- **EXERCISE:** Prove that...
 lemma le_sInf_setOf_lcInv_ge {F : R → S} (x x' : R) (hx : x' < x) :
@@ -123,6 +142,15 @@ lemma le_sInf_setOf_lcInv_ge {F : R → S} (x x' : R) (hx : x' < x) :
   -- Hint: First prove that when `x' < x` we have ` (lcInv F) (F x') ≤ x' < x `.
   -- Hint: Use a proof by contradiction, where the contradiction is with the property that the
   -- infimum (in the statement) being the greatest lower bound for a set.
+
+  -- rw [←lcInv]
+  have lem : (lcInv F) (F x') ≤ x := by
+    trans x'
+    · exact lcInv_apply_self_le x'
+    · exact le_of_lt hx
+    -- todo: needs to be <, not ≤
+
+
   sorry
 
 -- **EXERCISE:** Prove that...
