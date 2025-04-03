@@ -185,30 +185,18 @@ lemma lcInv_ge_of_sSup_lt (x : R) (z : S) (hz : sSup (F '' Iio x) < z) :
   -- let sw := sSup (F '' Iio x)
   -- simp_rw [sSup_le_iff, mem_image, mem_Iio, forall_exists_index, and_imp,
   --   forall_apply_eq_imp_iff₂] at sw
-  have ⟨ hz_le,hz_ne ⟩ := lt_iff_le_and_ne.mp hz
+  set ss := sSup (F '' Iio x)
+  have hz_le : sSup (F '' Iio x) ≤ ss := by rfl
   simp_rw [sSup_le_iff, mem_image, mem_Iio, forall_exists_index, and_imp,
     forall_apply_eq_imp_iff₂] at hz_le
-  simp only [ne_eq] at hz_ne
-  -- simp_rw [le_iff_lt_or_eq] at hz_le
-  have : ∀ a < x, ¬ F a = z := by
-    intro x' hx
-    -- let q := F '' Iio x
-    intro Fxz
-    rw [←Fxz] at hz
-    have iio_sub : Iio x' ⊆ Iio x := by
-      simp only [Iio_subset_Iio_iff]
-      exact le_of_lt hx
-    have Fii_sub : (F '' Iio x') ⊆ (F '' Iio x) := by
-      exact image_mono iio_sub
-    have := sSup_le_sSup Fii_sub
-
-    -- change  sSup ({w | w ∈  F '' Iio x}) < _ at hz
-    -- simp only [mem_image, mem_Iio] at hz
-
-
-
-
-    apply ne_of_lt
+  have lem : ∀ x' < x, F x' < z := by exact fun a a_1 ↦ lt_of_le_of_lt (hz_le a a_1) hz
+  by_contra cont
+  unfold lcInv at cont
+  simp only [le_sInf_iff, mem_setOf_eq, not_forall, Classical.not_imp, not_le] at cont
+  obtain ⟨xx, c2, c3⟩ := cont
+  have w1 := lem xx c3
+  have w2 := lt_of_lt_of_le w1 c2
+  simp only [lt_self_iff_false] at w2
 
 
 
@@ -218,13 +206,18 @@ lemma lcInv_ge_of_sSup_lt (x : R) (z : S) (hz : sSup (F '' Iio x) < z) :
 
 
 
-  sorry
+
 
 -- **EXERCISE:** Prove that...
 lemma ge_sInf_setOf_lcInv_ge (x : R) (z : S) (hz : sSup (F '' Iio x) < z) :
     z ≥ sInf {y | x ≤ lcInv F y} := by
   -- Hint: This follows straightforwardly from `lcInv_ge_of_sSup_lt`.
-  sorry
+  change _ ≤ _
+  have slt : _ ≤ _ := lcInv_ge_of_sSup_lt x z hz
+  -- change _ ≤ _ at slt
+  have : z ∈ {y | x ≤ lcInv F y} := by exact slt
+  exact CompleteSemilatticeInf.sInf_le {y | x ≤ lcInv F y} z slt
+
 
 
 -- From this point on, we will need the assumption of dense ordering. A key lemma about it
@@ -240,13 +233,79 @@ lemma sInf_Ioi {α : Type*} [CompleteLattice α] {a : α} [DenselyOrdered α] :
     sInf (Ioi a) = a := by
   -- Hint: Figure out what `sInf_eq_of_forall_ge_of_forall_gt_exists_lt` is saying
   -- and use it and `exists_between` appropriately.
-  sorry
+  -- unfold Ioi
+  apply sInf_eq_of_forall_ge_of_forall_gt_exists_lt
+  ·
+    simp only [mem_Ioi]
+    intros x ax
+    exact ax.le
+  ·
+    simp only [mem_Ioi]
+    intros x ax
+    exact exists_between ax
+
+
 
 -- **EXERCISE:** Prove that...
 lemma sInf_setOf_lcInv_ge_le_sSup (x : R) [DenselyOrdered S] :
     sInf {y | x ≤ lcInv F y} ≤ sSup (F '' Iio x) := by
   -- Hint: The key is still `sInf_eq_of_forall_ge_of_forall_gt_exists_lt`, but more thinking
   -- is required for this.
+
+  have (z) := ge_sInf_setOf_lcInv_ge x z
+  -- todo: ^
+
+  suffices ∃ a b, a ∈ {y | x ≤ lcInv F y} ∧  b ∈ (F '' Iio x) ∧  a ≤ b by
+    have ⟨a, b, aw, bw, ab⟩ := this
+    trans a
+    · exact CompleteSemilatticeInf.sInf_le {y | x ≤ lcInv F y} a aw
+    · trans b
+      · exact ab
+      · exact CompleteLattice.le_sSup (F '' Iio x) b bw
+
+  simp only [mem_setOf_eq, mem_image, mem_Iio, exists_exists_and_eq_and]
+
+  rw [exists_comm]
+
+
+
+
+  use (F x)
+
+  unfold lcInv
+  simp only [le_sInf_iff, mem_setOf_eq]
+
+
+  -- unfold Iio
+  -- simp_rw [image]
+  -- simp only [mem_setOf_eq]
+  apply le_sSup
+  simp only [mem_image, mem_Iio]
+  -- suffices ∃ x_1 < x, sInf {y | x ≤ lcInv F y} =  F x_1 by
+  --   have ⟨a,b,c⟩ := this
+  --   use a
+  --   simp only [b, true_and]
+  --   exact id (Eq.symm c)
+
+  -- suffices (∀ a ∈ s, b ≤ a) → (∀ (w : α), b < w → ∃ a ∈ s, a < w) → sInf s = b
+
+
+
+  let x1 : R := sorry
+  use x1
+  have x1x : x1 < x := sorry
+  simp only [x1x, true_and]
+  symm
+
+  refine sInf_eq_of_forall_ge_of_forall_gt_exists_lt ?_ ?_
+  · intro a aw
+    simp only [mem_setOf_eq] at aw
+
+    done
+
+
+
+
   sorry
 
 -- **EXERCISE:** Prove that...
