@@ -144,21 +144,34 @@ lemma le_sInf_setOf_lcInv_ge {F : R → S} (x x' : R) (hx : x' < x) :
   -- infimum (in the statement) being the greatest lower bound for a set.
 
   -- rw [←lcInv]
-  have lem : (lcInv F) (F x') ≤ x := by
-    trans x'
-    · exact lcInv_apply_self_le x'
-    · exact le_of_lt hx
-    -- todo: needs to be <, not ≤
+  have lem : (lcInv F) (F x') < x := by
+    exact lt_of_le_of_lt (lcInv_apply_self_le x') hx
+  by_contra cont
+  apply lt_of_not_le at cont
+  rw [sInf_lt_iff] at cont
+  have ⟨a, ain, aFx⟩ := cont
+  rw [mem_setOf_eq] at ain
+  have mono := lcInv_mono F
+  unfold Monotone at mono
+  specialize mono (aFx.le)
+  have ax := lt_of_le_of_lt mono lem
+  have ax1 := lt_of_lt_of_le ax ain
+  simp only [lt_self_iff_false] at ax1
 
-
-  sorry
 
 -- **EXERCISE:** Prove that...
 lemma sInf_setOf_lcInv_ge_ge_sSup (x : R) :
     sInf {y | x ≤ lcInv F y} ≥ sSup (F '' Iio x) := by
   -- Hint: The key to the maths proof is the lemma `le_sInf_setOf_lcInv_ge` above;
   -- First sort out the math details, then this is straightforward.
-  sorry
+  change _ ≤ _
+  -- set l :=  sInf {y | x ≤ lcInv F y}
+  simp only [sSup_le_iff, mem_image, mem_Iio, forall_exists_index, and_imp,
+    forall_apply_eq_imp_iff₂]
+  intro x' hx
+  exact le_sInf_setOf_lcInv_ge x x' hx
+
+
 
 -- **EXERCISE:** Prove that...
 lemma lcInv_ge_of_sSup_lt (x : R) (z : S) (hz : sSup (F '' Iio x) < z) :
@@ -166,6 +179,45 @@ lemma lcInv_ge_of_sSup_lt (x : R) (z : S) (hz : sSup (F '' Iio x) < z) :
   -- Hint: The key to that is that for all `x' < x` we have `F x' < z`.
   -- Hint: Use a proof by contradiction, where the contradiction is with the property that the
   -- infimum (in the definition of `lcInv F`) is the greatest lower bound for a set.
+  change _ ≤ _
+  -- have := DenselyOrdered.dense (sSup (F '' Iio x)) z
+
+  -- let sw := sSup (F '' Iio x)
+  -- simp_rw [sSup_le_iff, mem_image, mem_Iio, forall_exists_index, and_imp,
+  --   forall_apply_eq_imp_iff₂] at sw
+  have ⟨ hz_le,hz_ne ⟩ := lt_iff_le_and_ne.mp hz
+  simp_rw [sSup_le_iff, mem_image, mem_Iio, forall_exists_index, and_imp,
+    forall_apply_eq_imp_iff₂] at hz_le
+  simp only [ne_eq] at hz_ne
+  -- simp_rw [le_iff_lt_or_eq] at hz_le
+  have : ∀ a < x, ¬ F a = z := by
+    intro x' hx
+    -- let q := F '' Iio x
+    intro Fxz
+    rw [←Fxz] at hz
+    have iio_sub : Iio x' ⊆ Iio x := by
+      simp only [Iio_subset_Iio_iff]
+      exact le_of_lt hx
+    have Fii_sub : (F '' Iio x') ⊆ (F '' Iio x) := by
+      exact image_mono iio_sub
+    have := sSup_le_sSup Fii_sub
+
+    -- change  sSup ({w | w ∈  F '' Iio x}) < _ at hz
+    -- simp only [mem_image, mem_Iio] at hz
+
+
+
+
+    apply ne_of_lt
+
+
+
+
+
+
+
+
+
   sorry
 
 -- **EXERCISE:** Prove that...
