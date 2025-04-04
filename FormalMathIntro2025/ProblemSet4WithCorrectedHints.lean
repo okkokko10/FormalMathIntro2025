@@ -251,62 +251,66 @@ lemma sInf_setOf_lcInv_ge_le_sSup (x : R) [DenselyOrdered S] :
     sInf {y | x ≤ lcInv F y} ≤ sSup (F '' Iio x) := by
   -- Hint: The key is still `sInf_eq_of_forall_ge_of_forall_gt_exists_lt`, but more thinking
   -- is required for this.
+  change _ ≥ _
+  have aaa (z) (hz : z > (sSup (F '' Iio x))) := ge_sInf_setOf_lcInv_ge x z hz
+  set l := sSup (F '' Iio x)
+  set r := sInf {y | x ≤ lcInv F y}
+  exact forall_gt_imp_ge_iff_le_of_dense.mp aaa
 
-  have (z) := ge_sInf_setOf_lcInv_ge x z
-  -- todo: ^
+  -- all z that are < rhs are ≤ lhs
 
-  suffices ∃ a b, a ∈ {y | x ≤ lcInv F y} ∧  b ∈ (F '' Iio x) ∧  a ≤ b by
-    have ⟨a, b, aw, bw, ab⟩ := this
-    trans a
-    · exact CompleteSemilatticeInf.sInf_le {y | x ≤ lcInv F y} a aw
-    · trans b
-      · exact ab
-      · exact CompleteLattice.le_sSup (F '' Iio x) b bw
+  -- suffices ∃ a b, a ∈ {y | x ≤ lcInv F y} ∧  b ∈ (F '' Iio x) ∧  a ≤ b by
+  --   have ⟨a, b, aw, bw, ab⟩ := this
+  --   trans a
+  --   · exact CompleteSemilatticeInf.sInf_le {y | x ≤ lcInv F y} a aw
+  --   · trans b
+  --     · exact ab
+  --     · exact CompleteLattice.le_sSup (F '' Iio x) b bw
 
-  simp only [mem_setOf_eq, mem_image, mem_Iio, exists_exists_and_eq_and]
+  -- simp only [mem_setOf_eq, mem_image, mem_Iio, exists_exists_and_eq_and]
 
-  rw [exists_comm]
-
-
-
-
-  use (F x)
-
-  unfold lcInv
-  simp only [le_sInf_iff, mem_setOf_eq]
-
-
-  -- unfold Iio
-  -- simp_rw [image]
-  -- simp only [mem_setOf_eq]
-  apply le_sSup
-  simp only [mem_image, mem_Iio]
-  -- suffices ∃ x_1 < x, sInf {y | x ≤ lcInv F y} =  F x_1 by
-  --   have ⟨a,b,c⟩ := this
-  --   use a
-  --   simp only [b, true_and]
-  --   exact id (Eq.symm c)
-
-  -- suffices (∀ a ∈ s, b ≤ a) → (∀ (w : α), b < w → ∃ a ∈ s, a < w) → sInf s = b
-
-
-
-  let x1 : R := sorry
-  use x1
-  have x1x : x1 < x := sorry
-  simp only [x1x, true_and]
-  symm
-
-  refine sInf_eq_of_forall_ge_of_forall_gt_exists_lt ?_ ?_
-  · intro a aw
-    simp only [mem_setOf_eq] at aw
-
-    done
+  -- rw [exists_comm]
 
 
 
 
-  sorry
+  -- use (F x)
+
+  -- unfold lcInv
+  -- simp only [le_sInf_iff, mem_setOf_eq]
+
+
+  -- -- unfold Iio
+  -- -- simp_rw [image]
+  -- -- simp only [mem_setOf_eq]
+  -- apply le_sSup
+  -- simp only [mem_image, mem_Iio]
+  -- -- suffices ∃ x_1 < x, sInf {y | x ≤ lcInv F y} =  F x_1 by
+  -- --   have ⟨a,b,c⟩ := this
+  -- --   use a
+  -- --   simp only [b, true_and]
+  -- --   exact id (Eq.symm c)
+
+  -- -- suffices (∀ a ∈ s, b ≤ a) → (∀ (w : α), b < w → ∃ a ∈ s, a < w) → sInf s = b
+
+
+
+  -- let x1 : R := sorry
+  -- use x1
+  -- have x1x : x1 < x := sorry
+  -- simp only [x1x, true_and]
+  -- symm
+
+  -- refine sInf_eq_of_forall_ge_of_forall_gt_exists_lt ?_ ?_
+  -- · intro a aw
+  --   simp only [mem_setOf_eq] at aw
+
+  --   done
+
+
+
+
+  -- sorry
 
 -- **EXERCISE:** Prove that...
 /-- If `G : S → R` is the left-continuous pseudoinverse of `F : R → S`, then we have
@@ -314,7 +318,13 @@ lemma sInf_setOf_lcInv_ge_le_sSup (x : R) [DenselyOrdered S] :
 theorem sInf_setOf_lcInv_ge_eq_sSup [DenselyOrdered S] (x : R) :
     sInf {y | x ≤ lcInv F y} = sSup (F '' Iio x) := by
   -- Hint: This now follows easily by combining the previous results.
-  sorry
+  have bbb := @sInf_setOf_lcInv_ge_le_sSup _ _ _ _ F x _
+  have aaa (z) (hz : z > (sSup (F '' Iio x))) := ge_sInf_setOf_lcInv_ge x z hz
+  set l := sSup (F '' Iio x)
+  set r := sInf {y | x ≤ lcInv F y}
+  refine eq_of_le_of_le bbb ?_
+  exact sInf_setOf_lcInv_ge_ge_sSup x
+
 
 end left_continuous_inverse
 
