@@ -67,6 +67,9 @@ variable (f : ℝ → ℝ) (f_cont : Continuous f)
 -- that `f` is nonzero at some point of the open interval `(a,b)`.
 variable (f_nn : 0 ≤ f) (f_ne_zero : ∃ z ∈ Ioo a b, f z ≠ 0)
 
+
+set_option linter.unusedTactic false
+
 -- The following is the key lemma --- regardless of which of the two integrals (Lebesgue
 -- or Bochner) one chooses to use.
 -- **EXERCISE:** Prove that...
@@ -79,7 +82,106 @@ lemma exists_forall_mem_Ioo_gt (a_lt_b : a < b)
   -- up nicely (hint: `linarith` is good for proving the many needed interval membership
   -- inequalities if you have arranged the tactic state appropriately for it).
   -- As usual, of course --- first make sure that you know the complete math proof!
-  sorry
+
+  -- ∃ c > 0, ∃ si ∈ SubIoo (Icc a b), ∀ x ∈ si, c ≤ f x
+  have ⟨z_ioo, fz_n0⟩  := f_ne_zero.choose_spec
+  set z := f_ne_zero.choose
+  have fz_pos : 0 < f z := by
+    refine lt_of_le_of_ne ?_ ?_
+    · exact f_nn z
+    · exact fz_n0.symm
+
+  let c := (f z) / 2
+  use c, (by positivity)
+
+  -- plan: use
+  #check IsOpen.preimage
+  -- in a positive neighborhood of (f z)
+  -- to get an open set containing z
+  -- which must have as subset an open interval containing z (the portion connected to z)
+  let c3 := f z * 3 / 2
+  let fz_neigh := Ioo c c3
+  have fz_neigh_open : IsOpen fz_neigh := isOpen_Ioo
+  have wz_open := fz_neigh_open.preimage f_cont
+  set wz := f ⁻¹' fz_neigh
+  have wz_gt_c : ∀ x ∈ wz, c ≤ f x := by
+    unfold wz fz_neigh
+    simp only [mem_preimage, mem_Ioo, and_imp]
+    intros
+    linarith
+  have wz_has_z : z ∈ wz := by
+    unfold wz fz_neigh c c3
+    simp only [mem_preimage, mem_Ioo]
+    constructor <;> linarith
+
+  have z_neigh_exists : ∃ a' b', a' ∈ Icc a b ∧ b' ∈ Icc a b ∧  Ioo a' b' ⊆ wz
+    ∧ a' < b'
+    --∧ z ∈ Ioo a' b'
+    := by
+
+    let wz_inside := wz ∩ Ioo a b
+    have wz_inside_open : IsOpen wz_inside := by
+      unfold wz_inside
+      refine IsOpen.inter wz_open ?_
+      exact isOpen_Ioo
+    have wz_inside_has_z : z ∈ wz_inside := by exact mem_inter wz_has_z z_ioo
+
+    -- have : wz.Nonempty := by exact nonempty_of_mem wz_has_z
+    have ioo := wz_inside_open.exists_Ioo_subset (nonempty_of_mem wz_inside_has_z)
+
+    have ⟨ a',b',a'_lt_b',io⟩ := ioo
+    use a', b'
+    have within : Ioo a' b' ⊆ Ioo a b := by
+      trans wz_inside
+      exact io
+      exact inter_subset_right
+    simp only [mem_Icc]
+
+    have ⟨aa, bb⟩  := (Ioo_subset_Ioo_iff a'_lt_b').mp within
+    simp [aa,bb, le_trans a'_lt_b'.le bb, le_trans aa a'_lt_b'.le]
+    constructor
+    · trans wz_inside
+      · exact io
+      · exact inter_subset_left
+    · exact a'_lt_b'
+
+
+
+    -- let z_neigh := connectedComponentIn wz z
+    -- have z_neigh_open : IsOpen z_neigh := by
+    --   exact IsOpen.connectedComponentIn wz_open
+
+    -- #check isOpen_iff_generate_intervals
+    -- have openInterval : ∃ a' b', Ioo a' b' = z_neigh := by
+    --   unfold z_neigh
+
+
+    -- -- let a' := (sInf z_neigh) ⊔ a
+    -- -- let b' := sSup z_neigh ⊓ b
+
+    -- have ⟨ a',b',io⟩ :=
+
+    -- have a'_lt_b' : a' < b' := sorry
+    -- use a', b'
+    -- simp only [mem_Icc]
+    -- -- constructor
+    -- -- · constructor
+    -- --   · exact le_max_right (sInf z_neigh) a
+    -- --   ·
+    -- --   done
+
+
+    -- sorry
+
+  have ⟨a', b', a'i, b'i, zn_sub, a'_lt_b'⟩ := z_neigh_exists
+  use a', a'i, b', b'i, a'_lt_b'
+  exact fun x a ↦ wz_gt_c x (zn_sub a)
+
+
+
+
+
+  -- sorry
 
 /-
 The following is the *Lebesgue integral version of the main statement* of this problem sheet.
