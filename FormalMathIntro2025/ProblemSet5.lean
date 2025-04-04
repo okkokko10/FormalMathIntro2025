@@ -202,7 +202,81 @@ theorem main_goal₁ (a_lt_b : a < b)
   -- The casting functions are `ENNReal.ofReal` and `ENNReal.toReal`.
   -- Some relevant lemmas about these are `ENNReal.ofReal_pos`, `ENNReal.ofReal_le_ofReal`,
   -- and you may need more, although sometimes `simp` knows about these and can help.
-  sorry
+
+
+  have lem := exists_forall_mem_Ioo_gt f a_lt_b f_cont f_nn f_ne_zero
+  have ⟨c, c_pos, a', ain,b', bin, a_b, great⟩ := lem
+  -- simp only [gt_iff_lt]
+  #check setLIntegral_mono
+
+  let zer : ℝ → ENNReal :=
+    fun x ↦ Set.indicator (Ioo a' b') (fun _ ↦ ENNReal.ofReal c) x
+
+
+  -- let f' : ℝ → ENNReal := fun x ↦ ENNReal.ofReal (f x)
+  let f' : ℝ → ENNReal := ENNReal.ofReal ∘ f
+
+  have f'_cont : Continuous f' := by
+    -- unfold f'
+    -- rw [continuous_def] at f_cont ⊢
+    -- intros s os
+    have := ENNReal.continuous_ofReal
+    exact Continuous.comp ENNReal.continuous_ofReal f_cont
+
+
+  have measurable_f : Measurable f' := by
+    exact Continuous.borel_measurable f'_cont
+
+  have f_nn_ioc : ∀ x ∈ Ioc a b, zer x ≤ f' x := by
+
+    intros x ax
+    unfold zer
+    unfold indicator
+    by_cases hx : x ∈ Ioo a' b'
+
+    simp only [hx, ↓reduceIte]
+    unfold f'
+    simp only [Function.comp_apply]
+    exact ENNReal.ofReal_le_ofReal (great x hx)
+    simp only [hx, ↓reduceIte, zero_le]
+
+
+
+
+  -- let s := Ioc a b
+
+  have m : Measure ℝ := by exact ProbabilityTheory.gammaMeasure a a
+
+  -- have q : ∫⁻ (x : ℝ) in Ioc a b, zer x ≤ ∫⁻ (x : ℝ) in Ioc a b, f' x --ENNReal.ofReal (f x)
+  --   := @setLIntegral_mono _ _ _ _ _ _ measurable_f f_nn_ioc
+  have q : ∫⁻ (x : ℝ) in Ioc a b, zer x ≤ ∫⁻ (x : ℝ) in Ioc a b, f' x := setLIntegral_mono measurable_f f_nn_ioc
+  -- Okko: why does this need the type hint to work?
+
+
+  unfold f' at q
+  simp only [Function.comp_apply] at q
+  refine lt_of_lt_of_le ?_ q
+
+  unfold zer
+  simp only [measurableSet_Ioo, lintegral_indicator, Measure.restrict_restrict, lintegral_const,
+    MeasurableSet.univ, Measure.restrict_apply, univ_inter, CanonicallyOrderedAdd.mul_pos,
+    ENNReal.ofReal_pos]
+  simp only [c_pos, true_and]
+  have subsetness : Ioo a' b' ⊆ Ioc a b := by
+    intro x xa
+    simp only [mem_Ioo] at xa
+    have ⟨ain1,ain2⟩ := ain
+    have ⟨bin1,bin2⟩ := bin
+    simp [a_b,bin1,bin2,ain1,ain2,xa]
+    constructor
+    exact lt_of_le_of_lt ain1 xa.left
+    exact le_trans xa.right.le bin2
+  have so (s1 s2 : Set ℝ) : s1 ⊆ s2 → s1 ∩ s2 = s1 := by
+    intro www
+    exact (left_eq_inter.mpr www).symm
+  simp [so _ _ subsetness]
+  exact a_b
+
 
 /-
 The following is the *Bochner integral version of the main statement* of this problem sheet.
@@ -228,6 +302,11 @@ theorem main_goal₂ (a_lt_b : a < b)
   -- In this version you will need to provide a few integrability proofs. Searching the
   -- library is the key! (And when you don't find anything for `IntervalIntegrable`, you
   -- can `rw [IntervalIntegrable]` and search the library for results on `IntegrableOn`.)
+
+  #check intervalIntegral.integral_mono_on
+
+  have lem := main_goal₁ f a_lt_b f_cont f_nn f_ne_zero
+
   sorry
 
 end nonvanishing_integral
