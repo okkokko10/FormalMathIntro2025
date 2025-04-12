@@ -245,7 +245,7 @@ theorem main_goal₁ (a_lt_b : a < b)
 
   -- let s := Ioc a b
 
-  have m : Measure ℝ := by exact ProbabilityTheory.gammaMeasure a a
+  -- have m : Measure ℝ := by exact ProbabilityTheory.gammaMeasure a a
 
   -- have q : ∫⁻ (x : ℝ) in Ioc a b, zer x ≤ ∫⁻ (x : ℝ) in Ioc a b, f' x --ENNReal.ofReal (f x)
   --   := @setLIntegral_mono _ _ _ _ _ _ measurable_f f_nn_ioc
@@ -305,9 +305,113 @@ theorem main_goal₂ (a_lt_b : a < b)
 
   #check intervalIntegral.integral_mono_on
 
-  have lem := main_goal₁ f a_lt_b f_cont f_nn f_ne_zero
+  have lem := exists_forall_mem_Ioo_gt f a_lt_b f_cont f_nn f_ne_zero
+  have ⟨c, c_pos, a', ain,b', bin, a_b, great⟩ := lem
+  have subsetness : Ioo a' b' ⊆ Ioc a b := by
+    intro x xa
+    simp only [mem_Ioo] at xa
+    have ⟨ain1,ain2⟩ := ain
+    have ⟨bin1,bin2⟩ := bin
+    simp [a_b,bin1,bin2,ain1,ain2,xa]
+    constructor
+    exact lt_of_le_of_lt ain1 xa.left
+    exact le_trans xa.right.le bin2
 
-  sorry
+  let zer : ℝ → ℝ  :=
+    fun x ↦ Set.indicator (Ioo a' b') (fun _ ↦ c) x
+
+  -- have interv := IntervalIntegrable f _ a b
+
+  have zer_lt_f : ∀ x ∈ Icc a b, zer x ≤ f x := by
+
+    intros x ax
+    unfold zer
+    unfold indicator
+    by_cases hx : x ∈ Ioo a' b'
+
+    simp only [hx, ↓reduceIte]
+    exact great x hx
+    simp only [hx, ↓reduceIte]
+    exact f_nn x
+
+  -- let m : Measure ℝ := by volume_tac
+  -- have m_finite : IsLocallyFiniteMeasure m := by exact Real.locallyFinite_volume
+
+
+  have inte_zer : IntervalIntegrable zer volume a b := by
+    rw [IntervalIntegrable]
+    constructor <;>
+    ·
+      refine IntegrableOn.indicator ?_ ?_
+      ·
+        simp only [integrableOn_const]
+        right
+        apply measure_Ioc_lt_top
+      · exact measurableSet_Ioo
+
+
+  have inte_f : IntervalIntegrable f volume a b := by
+    rw [IntervalIntegrable]
+    constructor
+    -- · refine integrableOn_Ioc_of_intervalIntegral_norm_bounded ?_ ?_ ?_ ?_ ?_
+    -- rw [integrableOn_Ioc_iff_integrableOn_Ioo]
+    exact Continuous.integrableOn_Ioc f_cont
+    exact Continuous.integrableOn_Ioc f_cont
+
+
+
+
+  have q := intervalIntegral.integral_mono_on  a_lt_b.le inte_zer inte_f zer_lt_f
+
+  refine lt_of_lt_of_le ?_ q
+
+  suffices 0 < ∫ (u : ℝ) in (Ioc a b), zer u ∂volume by
+    rw [intervalIntegral.integral_of_le a_lt_b.le]
+    exact this
+
+  have subsetness : Ioo a' b' ⊆ Ioc a b := by
+    intro x xa
+    simp only [mem_Ioo] at xa
+    have ⟨ain1,ain2⟩ := ain
+    have ⟨bin1,bin2⟩ := bin
+    simp [a_b,bin1,bin2,ain1,ain2,xa]
+    constructor
+    exact lt_of_le_of_lt ain1 xa.left
+    exact le_trans xa.right.le bin2
+  have so (s1 s2 : Set ℝ) : s1 ⊆ s2 → s2 ∩ s1 = s1 := by
+    intro www
+    exact (right_eq_inter.mpr www).symm
+  have superset_inter_a'b' := so _ _ subsetness
+
+  rw [←integral_indicator]
+  ·
+    unfold zer
+
+    rw [indicator_indicator]
+    rw [superset_inter_a'b']
+    rw [integral_indicator]
+    ·
+      simp only [integral_const, MeasurableSet.univ, Measure.restrict_apply, univ_inter, smul_eq_mul]
+
+
+
+      refine mul_pos ?_ c_pos
+      simp only [Real.volume_Ioo]
+      have ba_pos : 0 < b' - a' := by
+        simp only [sub_pos]
+        exact a_b
+      set ba := b' - a'
+      have ba_convert : ba = (ENNReal.ofReal ba).toReal := by
+        refine Eq.symm (ENNReal.toReal_ofReal ?_)
+        exact ba_pos.le
+      exact ba_convert ▸ ba_pos
+    ·
+      exact measurableSet_Ioo
+  ·
+    exact measurableSet_Ioc
+
+
+  done
 
 end nonvanishing_integral
 
