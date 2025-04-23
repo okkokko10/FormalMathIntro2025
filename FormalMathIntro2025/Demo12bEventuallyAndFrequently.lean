@@ -19,6 +19,20 @@ variable (P : X → Prop)
 example : F.Eventually P ↔ {x | P x} ∈ F := by
   rfl
 
+
+-- Okko: eventually means that the filter contains a set where P holds.
+example : F.Eventually P ↔ ∃ s ∈ F, s ⊆ P := by
+  unfold Filter.Eventually
+  change P ∈ F ↔ ∃ s ∈ F, s ⊆ P
+  constructor
+  · intro PF
+    use P
+  · intro ⟨a, aF,aP⟩
+    exact F.mem_of_superset aF aP
+
+
+
+
 -- The predicate `P` holds **frequently** along the filter `F` if...
 example : F.Frequently P ↔ ∀ s ∈ F, ∃ x ∈ s, P x := by
   exact frequently_iff
@@ -41,6 +55,22 @@ example (c : ℝ) :
   have filt : Ioi m ∈ atTop := by exact Ioi_mem_atTop m
   filter_upwards [filt] with n n_large
   exact key n n_large
+
+
+-- Okko
+example (c : ℝ) :
+    atTop.Eventually (fun (n : ℕ) ↦ Real.sqrt n > c) := by
+  have sqrt_ineq (hc: c ≥ 0) (n : ℕ) : Real.sqrt n > c ↔ n > c*c := by sorry
+  by_cases hc : 0 ≤ c
+  ·
+    simp_rw [sqrt_ineq hc]
+    set cc := c * c
+    have filt : Ioi cc ∈ atTop := by exact Ioi_mem_atTop cc
+
+    sorry
+
+
+  sorry
 
 -- The real-number sequence `(aₙ)` with `aₙ = (-1)ⁿ` is frequently negative (along the `atTop`
 -- filter, i.e., as `n → ∞`).

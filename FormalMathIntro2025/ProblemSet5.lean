@@ -183,6 +183,62 @@ lemma exists_forall_mem_Ioo_gt (a_lt_b : a < b)
 
   -- sorry
 
+
+
+/-
+My original attempt. the below theorems were submitted late.
+-/
+-- **EXERCISE:** Prove that...
+/-
+theorem main_goal₁ (a_lt_b : a < b)
+    (f_cont : Continuous f) (f_nn : 0 ≤ f) (f_ne_zero : ∃ z ∈ Ioo a b, f z ≠ 0) :
+    0 < ∫⁻ x in Ioc a b, ENNReal.ofReal (f x) := by
+  -- Hint: Mathematically the key is the lemma `exists_forall_mem_Ioo_gt` above
+  --       and monotonicity of integrals. Make sure you know the full maths proof first!
+  -- Hint: The appropriate monotonicity of integrals in this case is `setLIntegral_mono`.
+  -- Hint: One possible way of writing the lower bound for the integral is by comparing the
+  --       integrand `f` to a suitable indicator function, see `Set.indicator`.
+  -- Hint: Once you have manipulated the integrals to useful forms, `simp` can make progress.
+  --
+  -- In this version there will be a few casts from ℝ (`Real`) to [0,+∞] (`ENNReal`) and back.
+  -- The casting functions are `ENNReal.ofReal` and `ENNReal.toReal`.
+  -- Some relevant lemmas about these are `ENNReal.ofReal_pos`, `ENNReal.ofReal_le_ofReal`,
+  -- and you may need more, although sometimes `simp` knows about these and can help.
+
+
+  have lem := exists_forall_mem_Ioo_gt f a_lt_b f_cont f_nn f_ne_zero
+  have ⟨c, c_pos, a', ain,b', bin, a_b, great⟩ := lem
+  -- simp only [gt_iff_lt]
+  #check setLIntegral_mono
+
+  let zer := (0 : ℝ → ENNReal)
+
+  have f' : ℝ → ENNReal := fun x ↦ ENNReal.ofReal (f x)
+
+  have f'_cont : Continuous f' := by
+
+  have measurable_f : Measurable f' := by
+    exact?
+    exact Continuous.borel_measurable f_cont
+
+  have f_nn_ioc : ∀ x ∈ Ioc a b, zer x ≤ f' x := by
+
+    intros x ax
+    unfold zer
+    simp
+
+  let s := Ioc a b
+  have --: ∫⁻ (x : ℝ) in s, zer x ∂_ ≤ ∫⁻ (x : ℝ ) in s, f x ∂_
+    := setLIntegral_mono measurable_f f_nn_ioc
+
+  sorry
+-/
+
+
+
+
+
+
 /-
 The following is the *Lebesgue integral version of the main statement* of this problem sheet.
 I think it is slightly easier of the two, because Lebesgue integrals are better behaved and the
